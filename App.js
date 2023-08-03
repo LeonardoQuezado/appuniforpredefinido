@@ -5,13 +5,8 @@ import * as Location from 'expo-location';
 import { BlurView } from 'expo-blur';
 
 export default function App() {
-  const [initialRegion, setInitialRegion] = useState({
-    latitude: -3.770647490734622,
-    longitude: -38.48182272166014,
-    latitudeDelta: 0.0922,
-    longitudeDelta: 0.0421,
-  });
- 
+  const [initialRegion, setInitialRegion] = useState(null);
+  const [userLocation, setUserLocation] = useState(null);
   const [showInicioLista, setShowInicioLista] = useState(false);
   const [showFimLista, setShowFimLista] = useState(false);
   const [selectedInicio, setSelectedInicio] = useState(null);
@@ -218,17 +213,28 @@ export default function App() {
 
       let location = await Location.getCurrentPositionAsync({});
       const { latitude, longitude } = location.coords;
-      setInitialRegion({ ...initialRegion, latitude, longitude });
+      setInitialRegion({
+        latitude,
+        longitude,
+        latitudeDelta: 0.006,
+        longitudeDelta: 0.006,
+      });
+      setUserLocation({ latitude, longitude });
 
       Location.watchPositionAsync(
-        { distanceInterval: 100, timeInterval: 1000 }, // Atualização a cada 1 segundo
+        { distanceInterval: 100, timeInterval: 1000 },
         (location) => {
           const { latitude, longitude } = location.coords;
-          setInitialRegion({ ...initialRegion, latitude, longitude });
+          setInitialRegion({
+            ...initialRegion,
+            latitude,
+            longitude,
+          });
+          setUserLocation({ latitude, longitude });
         }
       );
     })();
-  }, []);  //gera a localização atual a cada segundo com a watchpositionasync
+  }, []);
 
   useEffect(() => {
     if (selectedInicio && selectedFim) {
@@ -241,7 +247,7 @@ export default function App() {
     <View style={styles.container}>
       
       <MapView style={styles.map} initialRegion={initialRegion}>
-  <Marker coordinate={{ latitude: initialRegion.latitude, longitude: initialRegion.longitude }} />
+      {userLocation && <Marker coordinate={userLocation} />}
   
   {rotaSelecionada && (
     <Polyline

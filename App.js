@@ -155,7 +155,7 @@ export default function App() {
   const rotaCentrodeConvivenciaInicio = rotaInicioCentrodeConvivencia.slice().reverse();
   const rotaBlococBiblioteca= rotaBibilotecaBlococ.slice().reverse();
   const rotaCentrodeConvivenciaBlococ = rotaBlococCentrodeConvivencia.slice().reverse();
- const rotaBibliotecaCentrodeConvivencia = rotaCentrodeConvivenciaBiblioteca.slice().reverse();
+  const rotaBibliotecaCentrodeConvivencia = rotaCentrodeConvivenciaBiblioteca.slice().reverse();
 
    const routes = {
     'Inicio Rota Acessivel - Bloco c':rotaInicioBlococ,
@@ -247,7 +247,7 @@ export default function App() {
     <View style={styles.container}>
       
       <MapView style={styles.map} initialRegion={initialRegion}>
-      {userLocation && <Marker coordinate={userLocation} />}
+      {userLocation && <Marker coordinate={userLocation} pinColor="#474744" />}
   
   {rotaSelecionada && (
     <Polyline
@@ -257,8 +257,6 @@ export default function App() {
     />
   )}
 </MapView>
-
-
       <View style={styles.viewbotoes}>
       <TouchableOpacity style={styles.butaoinicio} onPress={handlerInicioPress}>
       <Text style={styles.butaotextinicio}>Selecionar Inicio</Text>

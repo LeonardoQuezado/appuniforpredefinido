@@ -3,6 +3,8 @@ import { View, StyleSheet, TouchableOpacity, Text, FlatList, Modal} from 'react-
 import MapView, { Marker , Polyline} from 'react-native-maps';
 import * as Location from 'expo-location';
 import { BlurView } from 'expo-blur';
+import { Ionicons } from '@expo/vector-icons';
+
 
 export default function App() {
   const [initialRegion, setInitialRegion] = useState(null);
@@ -11,7 +13,8 @@ export default function App() {
   const [showFimLista, setShowFimLista] = useState(false);
   const [selectedInicio, setSelectedInicio] = useState(null);
   const [selectedFim, setSelectedFim] = useState(null);
-  
+  const [showModal, setShowModal] = useState(false);
+
   const data= [
     {id: 1, label: 'Inicio Rota Acessivel'},
     {id: 2, label: 'Bloco c'},
@@ -184,11 +187,13 @@ export default function App() {
   const [rotaSelecionada, setRotaSelecionada] = useState(null);
  
   const handlerInicioPress = () => {
+    setShowModal(!showModal); 
     setShowInicioLista(!showInicioLista);
     setShowFimLista(false);
   };
 
   const handlerFimPress = () => {
+    setShowModal(!showModal);
     setShowFimLista(!showFimLista);
     setShowInicioLista(false);
   };
@@ -245,62 +250,84 @@ export default function App() {
 
   return (
     <View style={styles.container}>
-      
       <MapView style={styles.map} initialRegion={initialRegion}>
-      {userLocation && <Marker coordinate={userLocation} pinColor="#474744" />}
+        {userLocation && <Marker coordinate={userLocation} pinColor="#474744" />}
+        {rotaSelecionada && (
+          <Polyline
+            coordinates={rotaSelecionada}
+            strokeColor="purple" 
+            strokeWidth={5} 
+          />
+        )}
+      </MapView>
   
-  {rotaSelecionada && (
-    <Polyline
-      coordinates={rotaSelecionada}
-      strokeColor="purple" 
-      strokeWidth={5} 
-    />
-  )}
-</MapView>
       <View style={styles.viewbotoes}>
-      <TouchableOpacity style={styles.butaoinicio} onPress={handlerInicioPress}>
-      <Text style={styles.butaotextinicio}>Selecionar Inicio</Text>
-      </TouchableOpacity>
-
-      <TouchableOpacity style={styles.butaoFim} onPress={handlerFimPress}>
-      <Text style={styles.butaotextinicio}>Selecionar destino</Text>
-      </TouchableOpacity>
+        <TouchableOpacity style={styles.butaoinicio} onPress={handlerInicioPress}>
+          <Text style={styles.butaotextinicio}>Selecionar Início</Text>
+        </TouchableOpacity>
+  
+        <TouchableOpacity style={styles.butaoFim} onPress={handlerFimPress}>
+          <Text style={styles.butaotextinicio}>Selecionar Destino</Text>
+        </TouchableOpacity>
       </View>
-      <Modal visible={showInicioLista || showFimLista} transparent>
-        <View style={styles.modalContainer}>
-          <BlurView intensity={100} style={styles.blurContainer} blurType="light" blurAmount={10}>
-            <View style={styles.listContainer}>
-              {showInicioLista && (
-                <FlatList
-                  data={data}
-                  keyExtractor={(item) => item.id}
-                  contentContainerStyle={styles.listContent} // Novo estilo para centralizar a lista
-                  renderItem={({ item }) => (
-                    <TouchableOpacity style={styles.listItem} onPress={() => handleInicioItemPress(item)}>
-                      <Text>{item.label}</Text>
-                    </TouchableOpacity>
-                  )}
-                />
-              )}
+  
+      {showInicioLista && (
+  <Modal transparent animationType="slide" visible={true}>
+    <View style={styles.modalContainer}>
+      <BlurView intensity={100} style={styles.blurContainer} blurType="light" blurAmount={10}>
+        <View style={styles.listContainer}>
+         <View style={styles.modalCloseContainer}>
+           <TouchableOpacity style={styles.modalCloseButton} onPress={() => setShowInicioLista(false)}>
+            <Ionicons name="ios-close" size={30} color="black" />
+            </TouchableOpacity>
+          </View>
 
-              {showFimLista && (
-                <FlatList
-                  data={data}
-                  keyExtractor={(item) => item.id}
-                  contentContainerStyle={styles.listContent} // Novo estilo para centralizar a lista
-                  renderItem={({ item }) => (
-                    <TouchableOpacity style={styles.listItem} onPress={() => handleFimItemPress(item)}>
-                      <Text>{item.label}</Text>
-                    </TouchableOpacity>
-                  )}
-                />
-              )}
-            </View>
-          </BlurView>
+          <FlatList
+            data={data}
+            keyExtractor={(item) => item.id.toString()}
+            contentContainerStyle={styles.listContent}
+            renderItem={({ item })  => (
+              <TouchableOpacity style={styles.listItem} onPress={() => handleInicioItemPress(item)}>
+                <Text>{item.label}</Text>
+              </TouchableOpacity>
+            )}
+          />
         </View>
-      </Modal>
+      </BlurView>
+    </View>
+  </Modal>
+)}
+
+{showFimLista && (
+  <Modal transparent animationType="slide" visible={true}>
+    <View style={styles.modalContainer}>
+      <BlurView intensity={100} style={styles.blurContainer} blurType="light" blurAmount={10}>
+        <View style={styles.listContainer}>
+          <View style={styles.modalCloseContainer}>
+            <TouchableOpacity style={styles.modalCloseButton} onPress={() => setShowFimLista(false)}>
+              <Ionicons name="ios-close" size={30} color="black" />
+            </TouchableOpacity>
+          </View>
+
+          <FlatList
+            data={data}
+            keyExtractor={(item) => item.id.toString()}
+            contentContainerStyle={styles.listContent}
+            renderItem={({ item }) => (
+              <TouchableOpacity style={styles.listItem} onPress={() => handleFimItemPress(item)}>
+                <Text>{item.label}</Text>
+              </TouchableOpacity>
+            )}
+          />
+        </View>
+      </BlurView>
+    </View>
+  </Modal>
+)}
+
     </View>
   );
+  
 }
 
 const styles = StyleSheet.create({
@@ -345,31 +372,37 @@ viewbotoes:{
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.5)', // Semi-transparent background for the modal
+    backgroundColor: 'rgba(0, 0, 0, 0.5)', 
   },
   blurContainer: {
     borderRadius: 10,
     padding: 20,
-    margin: 10, // Add margin to position the BlurView on top of the map
+    margin: 10, 
   },
   listContainer: {
     alignItems: 'center',
     justifyContent: 'center',
-    flex: 1, // Ocupar todo o espaço vertical disponível
+    flex: 1, 
     flexDirection : 'row'
   },
   listContent: {
-    width: '100%', // Ajuste a largura conforme necessário
+    width: '100%',
   },
   listItem: {
     backgroundColor: 'white',
     borderRadius: 5,
     padding: 30,
     marginBottom: 30,
-    paddingVertical: 10, // Diminuir o espaçamento vertical
-    paddingHorizontal: 20, // Aumentar o espaçamento horizontal
-    marginVertical: 10, // Diminuir o espaçamento vertical entre os itens
-    marginHorizontal: 10, // Aumentar o espaçamento horizontal entre os itens
+    paddingVertical: 10, 
+    paddingHorizontal: 20, 
+    marginVertical: 10, 
+    marginHorizontal: 10, 
   
   },
+  modalCloseContainer: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    marginBottom: 10,
+  },
+  
 });

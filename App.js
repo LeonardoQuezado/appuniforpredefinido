@@ -3,6 +3,8 @@ import { View, StyleSheet, TouchableOpacity, Text, FlatList, Modal} from 'react-
 import MapView, { Marker , Polyline} from 'react-native-maps';
 import * as Location from 'expo-location';
 import { BlurView } from 'expo-blur';
+import Tts from 'react-native-tts';
+
 import { Ionicons } from '@expo/vector-icons';
 
 
@@ -208,6 +210,7 @@ export default function App() {
     setShowFimLista(false); // Close the list
   };
 
+
   useEffect(() => {
     (async () => {
       let { status } = await Location.requestForegroundPermissionsAsync();
@@ -215,7 +218,7 @@ export default function App() {
         console.log('Permissão de localização negada!');
         return;
       }
-
+  
       let location = await Location.getCurrentPositionAsync({});
       const { latitude, longitude } = location.coords;
       setInitialRegion({
@@ -225,8 +228,8 @@ export default function App() {
         longitudeDelta: 0.006,
       });
       setUserLocation({ latitude, longitude });
-
-      Location.watchPositionAsync(
+  
+      const locationWatcher = await Location.watchPositionAsync(
         { distanceInterval: 100, timeInterval: 1000 },
         (location) => {
           const { latitude, longitude } = location.coords;
@@ -238,8 +241,15 @@ export default function App() {
           setUserLocation({ latitude, longitude });
         }
       );
+  
+      return () => {
+        if (locationWatcher) {
+          locationWatcher.remove();
+        }
+      };
     })();
   }, []);
+  
 
   useEffect(() => {
     if (selectedInicio && selectedFim) {

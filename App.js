@@ -1,11 +1,14 @@
 import React, { useEffect, useState } from 'react';
-import { View, StyleSheet, TouchableOpacity, Text, FlatList, Modal} from 'react-native';
-import MapView, { Marker , Polyline} from 'react-native-maps';
+import { View, StyleSheet, TouchableOpacity, Text, FlatList, Modal } from 'react-native';
+import MapView, { Marker, Polyline } from 'react-native-maps';
 import * as Location from 'expo-location';
 import { BlurView } from 'expo-blur';
 import Tts from 'react-native-tts';
+import { watchPositionAsync, LocationObject } from 'expo-location';
 
 import { Ionicons } from '@expo/vector-icons';
+
+
 
 
 export default function App() {
@@ -17,6 +20,7 @@ export default function App() {
   const [selectedFim, setSelectedFim] = useState(null);
   const [showModal, setShowModal] = useState(false);
 
+
   const data= [
     {id: 1, label: 'Inicio Rota Acessivel'},
     {id: 2, label: 'Bloco c'},
@@ -27,7 +31,6 @@ export default function App() {
     {id: 7, label: 'Bloco a ser adicionado'},
     {id: 8, label: 'Bloco a ser adicionado'},
   ]
-
   const rotaInicioBiblioteca = [
     { latitude: -3.770611359295958, longitude: -38.4818297624588 },
     { latitude: -3.770481888295082, longitude: -38.48185122013092 },
@@ -210,7 +213,6 @@ export default function App() {
     setShowFimLista(false); // Close the list
   };
 
-
   useEffect(() => {
     (async () => {
       let { status } = await Location.requestForegroundPermissionsAsync();
@@ -218,30 +220,21 @@ export default function App() {
         console.log('Permissão de localização negada!');
         return;
       }
-  
-      let location = await Location.getCurrentPositionAsync({});
-      const { latitude, longitude } = location.coords;
-      setInitialRegion({
-        latitude,
-        longitude,
-        latitudeDelta: 0.006,
-        longitudeDelta: 0.006,
-      });
-      setUserLocation({ latitude, longitude });
-  
+
       const locationWatcher = await Location.watchPositionAsync(
-        { distanceInterval: 100, timeInterval: 1000 },
+        { distanceInterval: 1, timeInterval: 1000 },
         (location) => {
           const { latitude, longitude } = location.coords;
-          setInitialRegion({
-            ...initialRegion,
+          setInitialRegion((prevRegion) => ({
+            ...prevRegion,
             latitude,
             longitude,
-          });
+          }));
           setUserLocation({ latitude, longitude });
+          console.log('Coordenadas de localização atualizadas:', latitude, longitude);
         }
       );
-  
+
       return () => {
         if (locationWatcher) {
           locationWatcher.remove();
@@ -250,7 +243,6 @@ export default function App() {
     })();
   }, []);
   
-
   useEffect(() => {
     if (selectedInicio && selectedFim) {
       const rotaCoords = getRouteCoordinates(selectedInicio, selectedFim);
@@ -260,13 +252,13 @@ export default function App() {
 
   return (
     <View style={styles.container}>
-      <MapView style={styles.map} initialRegion={initialRegion}>
+ <MapView style={styles.map} initialRegion={initialRegion}>
         {userLocation && <Marker coordinate={userLocation} pinColor="#474744" />}
         {rotaSelecionada && (
           <Polyline
             coordinates={rotaSelecionada}
-            strokeColor="purple" 
-            strokeWidth={5} 
+            strokeColor="purple"
+            strokeWidth={5}
           />
         )}
       </MapView>
@@ -280,6 +272,7 @@ export default function App() {
           <Text style={styles.butaotextinicio}>Selecionar Destino</Text>
         </TouchableOpacity>
       </View>
+      
   
       {showInicioLista && (
   <Modal transparent animationType="slide" visible={true}>
@@ -337,9 +330,7 @@ export default function App() {
 
     </View>
   );
-  
 }
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
